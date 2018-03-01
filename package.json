@@ -13,7 +13,6 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.201.0",
-    "aws4": "^1.6.0",
     "bluebird": "^3.5.1",
     "co": "^4.6.0",
     "mustache": "^2.3.0",

@@ -1,6 +1,5 @@
 const co = require("co");
-const Promise = require("bluebird");
-const awscred = Promise.promisifyAll(require("../../lib/awscred"));
+const aws4 = require("../../lib/aws4");
 
 let initialized = false;
 
@@ -17,15 +16,7 @@ const init = co.wrap(function* init() {
   process.env.cognito_user_pool_id = "us-east-1_XDkAXwUp5";
   process.env.cognito_server_client_id = "74s15ng74ra6rrv4fgd84b7nv8";
 
-  if (!process.env.AWS_ACCESS_KEY_ID) {
-    const cred = (yield awscred.loadAsync()).credentials;
-    process.env.AWS_ACCESS_KEY_ID = cred.accessKeyId;
-    process.env.AWS_SECRET_ACCESS_KEY = cred.secretAccessKey;
-
-    if (cred.sessionToken) {
-      process.env.AWS_SESSION_TOKEN = cred.sessionToken;
-    }
-  }
+  yield aws4.init();
 
   initialized = true;
 });
