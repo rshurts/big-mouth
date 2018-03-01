@@ -6,8 +6,8 @@
   "scripts": {
     "lint": "eslint '**/*.js'",
     "pretty": "eslint --fix '**/*.js'",
-    "integration-test": "env TEST_MODE=handler mocha tests/test_cases",
-    "acceptance-test": "env TEST_MODE=http TEST_ROOT=https://rz4fkgnyef.execute-api.us-east-1.amazonaws.com/dev mocha tests/test_cases --timeout 5000"
+    "integration-test": "env TEST_MODE=handler mocha tests/test_cases --timeout 10000",
+    "acceptance-test": "env TEST_MODE=http TEST_ROOT=https://rz4fkgnyef.execute-api.us-east-1.amazonaws.com/dev mocha tests/test_cases --timeout 10000"
   },
   "author": "",
   "license": "MIT",
