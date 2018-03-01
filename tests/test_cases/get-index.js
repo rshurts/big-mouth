@@ -5,9 +5,11 @@ const when = require("../steps/when");
 const cheerio = require("cheerio");
 
 describe(`When we invoke the GET / endpoint`, () => {
-  before(() => {
-    init();
-  });
+  before(
+    co.wrap(function* before() {
+      yield init();
+    })
+  );
 
   it(
     `Should return the index page with 8 restaurants`,

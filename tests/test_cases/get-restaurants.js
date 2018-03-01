@@ -4,9 +4,11 @@ const { init } = require("../steps/init");
 const when = require("../steps/when");
 
 describe(`When we invoke the GET /restaurants endpoint`, () => {
-  before(() => {
-    init();
-  });
+  before(
+    co.wrap(function* before() {
+      yield init();
+    })
+  );
 
   it(
     `Should return an array of 8 restaurants`,

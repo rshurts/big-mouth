@@ -9,7 +9,7 @@ describe(`Given an authenticated user`, () => {
   let user;
   before(
     co.wrap(function* before() {
-      init();
+      yield init();
       user = yield given.anAuthenticatedUser();
     })
   );
