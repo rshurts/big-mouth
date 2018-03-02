@@ -1,0 +1,226 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'SAM template for Serverless framework service: '
+Resources:
+  restaurantsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: restaurants
+      AttributeDefinitions:
+        - AttributeName: name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+  GetIndex:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: functions/get-index.handler
+      Runtime: nodejs6.10
+      CodeUri: /Users/Russell/Code/serverless/big-mouth/.serverless/big-mouth.zip
+      MemorySize: 128
+      Timeout: 3
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 'dynamodb:scan'
+              Resource: >-
+                arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/restaurants
+            - Effect: Allow
+              Action: 'execute-api:Invoke'
+              Resource: >-
+                arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:*/*/GET/restaurants
+      Environment:
+        Variables:
+          cognito_user_pool_id: us-east-1_XDkAXwUp5
+          cognito_client_id: 63c6bhcqs7m3qbu2t96ld0s012
+          restaurants_api: >-
+            https://rz4fkgnyef.execute-api.us-east-1.amazonaws.com/dev/restaurants
+      Events:
+        Event1:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+            RestApiId:
+              Ref: BigMouth
+  BigMouth:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: dev
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title:
+            Ref: 'AWS::StackName'
+        paths:
+          /:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  'Fn::Sub': >-
+                    arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetIndex.Arn}/invocations
+              responses: {}
+          /restaurants/:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  'Fn::Sub': >-
+                    arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetRestaurants.Arn}/invocations
+              responses: {}
+              security:
+                - Aws_iam: []
+          /restaurants/search/:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  'Fn::Sub': >-
+                    arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchRestaurants.Arn}/invocations
+              responses: {}
+              security:
+                - 'Arn:aws:cognitoIdp:usEast-1:622472871243:userpool/usEast-1_XDkAXwUp5': []
+        securityDefinitions:
+          Aws_iam:
+            type: apiKey
+            name: Aws_iam
+            in: header
+            x-amazon-apigateway-authtype: oauth2
+            x-amazon-apigateway-authorizer:
+              type: token
+              authorizerUri:
+                'Fn::Sub': >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Aws_iam.Arn}/invocations
+              identityValidationExpression: '^x-[a-z]+'
+              authorizerResultTtlInSeconds: 60
+          'Arn:aws:cognitoIdp:usEast-1:622472871243:userpool/usEast-1_XDkAXwUp5':
+            type: apiKey
+            name: >-
+              Arn:aws:cognitoIdp:usEast-1:622472871243:userpool/usEast-1_XDkAXwUp5
+            in: header
+            x-amazon-apigateway-authtype: oauth2
+            x-amazon-apigateway-authorizer:
+              type: token
+              authorizerUri:
+                'Fn::Sub': >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Arn:aws:cognitoIdp:usEast-1:622472871243:userpool/usEast-1_XDkAXwUp5.Arn}/invocations
+              identityValidationExpression: '^x-[a-z]+'
+              authorizerResultTtlInSeconds: 60
+  GetIndexLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - GetIndex
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: GetIndex
+      Principal: apigateway.amazonaws.com
+  GetRestaurants:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: functions/get-restaurants.handler
+      Runtime: nodejs6.10
+      CodeUri: /Users/Russell/Code/serverless/big-mouth/.serverless/big-mouth.zip
+      MemorySize: 128
+      Timeout: 3
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 'dynamodb:scan'
+              Resource: >-
+                arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/restaurants
+            - Effect: Allow
+              Action: 'execute-api:Invoke'
+              Resource: >-
+                arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:*/*/GET/restaurants
+      Environment:
+        Variables:
+          restaurants_table: restaurants
+      Events:
+        Event1:
+          Type: Api
+          Properties:
+            Path: /restaurants/
+            Method: get
+            RestApiId:
+              Ref: BigMouth
+  Aws_iamResourcePolicy:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - Aws_iam
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount:
+        Ref: 'AWS::AccountId'
+  GetRestaurantsLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - GetRestaurants
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: GetRestaurants
+      Principal: apigateway.amazonaws.com
+  SearchRestaurants:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: functions/search-restaurants.handler
+      Runtime: nodejs6.10
+      CodeUri: /Users/Russell/Code/serverless/big-mouth/.serverless/big-mouth.zip
+      MemorySize: 128
+      Timeout: 3
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 'dynamodb:scan'
+              Resource: >-
+                arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/restaurants
+            - Effect: Allow
+              Action: 'execute-api:Invoke'
+              Resource: >-
+                arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:*/*/GET/restaurants
+      Environment:
+        Variables:
+          restaurants_table: restaurants
+      Events:
+        Event1:
+          Type: Api
+          Properties:
+            Path: /restaurants/search/
+            Method: post
+            RestApiId:
+              Ref: BigMouth
+  'Arn:aws:cognitoIdp:usEast-1:622472871243:userpool/usEast-1_XDkAXwUp5ResourcePolicy':
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - 'Arn:aws:cognitoIdp:usEast-1:622472871243:userpool/usEast-1_XDkAXwUp5'
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount:
+        Ref: 'AWS::AccountId'
+  SearchRestaurantsLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - SearchRestaurants
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: SearchRestaurants
+      Principal: apigateway.amazonaws.com
