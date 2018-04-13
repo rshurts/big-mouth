@@ -4,8 +4,8 @@
   "description": "production-ready serverless tutorial",
   "repository": "github:rshurts/big-mouth",
   "scripts": {
-    "lint": "eslint '**/*.js'",
-    "pretty": "eslint --fix '**/*.js'",
+    "lint": "eslint 'functions/**/*.js'",
+    "pretty": "eslint --fix 'functions/**/*.js'",
     "integration-test": "env TEST_MODE=handler mocha tests/test_cases --timeout 10000",
     "acceptance-test": "env TEST_MODE=http TEST_ROOT=https://rz4fkgnyef.execute-api.us-east-1.amazonaws.com/dev mocha tests/test_cases --timeout 10000"
   },
@@ -14,6 +14,7 @@
   "dependencies": {
     "aws-sdk": "^2.201.0",
     "bluebird": "^3.5.1",
+    "chance": "^1.0.13",
     "co": "^4.6.0",
     "mustache": "^2.3.0",
     "serverless-pseudo-parameters": "^1.4.1",
@@ -22,7 +23,6 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "chance": "^1.0.13",
     "cheerio": "^1.0.0-rc.2",
     "eslint": "^4.18.1",
     "eslint-config-airbnb-base": "^12.1.0",
