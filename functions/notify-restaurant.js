@@ -20,7 +20,7 @@ module.exports.handler = co.wrap(function* handler(event, context, callback) {
     };
     yield sns.publish(putReq).promise();
     console.log(
-      `notified restaurant [${order.restaurantName}] of order [${
+      `Notified restaurant [${order.restaurantName}] of order [${
         order.orderId
       }]`
     );
