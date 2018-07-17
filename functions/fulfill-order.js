@@ -4,7 +4,7 @@ const AWS = require("aws-sdk");
 const kinesis = new AWS.Kinesis();
 const streamName = process.env.order_events_stream;
 
-module.exports.handler = co.wrap(function* handler(event, context, cb) {
+module.exports.handler = co.wrap(function* handler(event, context, callback) {
   const body = JSON.parse(event.body);
   const { restaurantName, orderId, userEmail } = body;
 
@@ -34,5 +34,5 @@ module.exports.handler = co.wrap(function* handler(event, context, cb) {
     body: JSON.stringify({ orderId })
   };
 
-  cb(null, response);
+  callback(null, response);
 });

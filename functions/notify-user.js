@@ -8,7 +8,7 @@ const sns = new AWS.SNS();
 const streamName = process.env.order_events_stream;
 const topicArn = process.env.user_notification_topic;
 
-module.exports.handler = co.wrap(function* handler(event, context, cb) {
+module.exports.handler = co.wrap(function* handler(event, context, callback) {
   const records = getRecords(event);
   const orderAccepted = records.filter(r => r.eventType === "order_accepted");
 
@@ -37,5 +37,5 @@ module.exports.handler = co.wrap(function* handler(event, context, cb) {
     console.log(`published 'user_notified' event to Kinesis`);
   }
 
-  cb(null, "all done");
+  callback(null, "all done");
 });
