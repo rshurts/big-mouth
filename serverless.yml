@@ -3,7 +3,7 @@ service: big-mouth
 plugins:
   - serverless-pseudo-parameters
   - serverless-sam
-  - serverless-iam-role-per-function
+  - serverless-iam-roles-per-function
 
 provider:
   name: aws
@@ -82,11 +82,11 @@ functions:
       - Effect: Allow
         Action: kinesis:PutRecord
         Resource: arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:stream/order-events
-    - Effect: Allow
-      Action: sns:Publish
-      Resource: 
-        - arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:restaurant-notification
-        - arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:restaurant-notification-retry
+      - Effect: Allow
+        Action: sns:Publish
+        Resource: 
+          - arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:restaurant-notification
+          - arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:restaurant-notification-retry
 
   retry-notify-restaurant:
     handler: functions/retry-notify-restaurant.handler
@@ -183,7 +183,7 @@ resources:
         TopicName: restaurant-notification-dlq
 
     userNotificationTopic:
-      Type: AWS::SNS:Topic
+      Type: AWS::SNS::Topic
       Properties:
         DisplayName: user-notification
         TopicName: user-notification
